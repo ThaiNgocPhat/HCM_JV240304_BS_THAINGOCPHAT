@@ -1,52 +1,47 @@
-create database crm;
-use crm;
+CREATE DATABASE crm;
+USE crm;
+drop database crm;
 
-
--- BẢNG BOOKS
-create table Books(
-    book_id int primary key auto_increment,
-    book_title varchar(100) not null,
-    book_author varchar(100) not null
+-- Tạo bảng Books
+CREATE TABLE Books(
+    book_id INT PRIMARY KEY AUTO_INCREMENT,
+    book_title VARCHAR(100) NOT NULL,
+    book_author VARCHAR(100) NOT NULL
 );
 
-
--- BẢNG READERS
-create table Readers(
-    id int primary key auto_increment,
-    name varchar(150) not null,
-    phone varchar(11) not null unique,
-    email varchar(100),
-);
--- TẠO INDEX CHO TRƯỜNG NAME
-create index idx_name ON Readers(name);
-
-
--- TẠO BẢNG BORROWINGRECORDS
-create table BorrowingRecords(
-    id int primary key auto_increment,
-    borrow_date date not null,
-    return_date date,
-    book_id int,
-    reader_id int,
-    foreign key (book_id) references Books(book_id),
-    foreign key (reader_id) references Readers(id)
+-- Tạo bảng Readers
+CREATE TABLE Readers(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(150) NOT NULL,
+    phone VARCHAR(11) NOT NULL UNIQUE,
+    email VARCHAR(100)
 );
 
+-- Tạo chỉ mục cho trường name trong bảng Readers
+CREATE INDEX idx_name ON Readers(name);
 
--- THÊM DỮ LIỆU CHO BẢNG
+-- Tạo bảng BorrowingRecords
+CREATE TABLE BorrowingRecords(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    borrow_date DATE NOT NULL,
+    return_date DATE,
+    book_id INT,
+    reader_id INT,
+    FOREIGN KEY (book_id) REFERENCES Books(book_id),
+    FOREIGN KEY (reader_id) REFERENCES Readers(id)
+);
 
--- THÊM DỮ LIỆU CHO BẢNG BOOK : 5 DŨE LIỆU
-insert into Books(book_title, book_author) values
+-- Thêm dữ liệu vào bảng Books
+INSERT INTO Books(book_title, book_author) VALUES
 ('Tấm Cám', 'Nguyễn Khoa Đăng'),
 ('Dế Mèn Phiêu Lưu Ký', 'Tô Hoài'),
 ('Số Đỏ', 'Vũ Trọng Phụng'),
 ('Nhà Giả Kim', 'Paulo Coelho'),
 ('Chí Phèo', 'Nam Cao');
 
-
--- THÊM DỮ LIỆU CHO READERS : 15 DỮ LIỆU
-insert into Readers(name, phone, email) values
-('Nguyen Van A', '0123456789', 'a@gmail.com'),
+-- Thêm dữ liệu vào bảng Readers
+INSERT INTO Readers(name, phone, email) VALUES
+('Nguyen Van A', '0122256789', 'a@gmail.com'),
 ('Nguyen Van B', '0987654321', 'b@gmail.com'),
 ('Nguyen Van C', '0123456789', 'c@gmail.com'),
 ('Nguyen Van D', '0987123456', 'd@gmail.com'),
@@ -62,115 +57,58 @@ insert into Readers(name, phone, email) values
 ('Nguyen Van N', '0928123456', 'n@gmail.com'),
 ('Nguyen Van O', '0946123456', 'o@gmail.com');
 
--- THÊM DỮ LIỆU CHO BẢNG BORROWINGRECORDS : 3 DỮ LIỆU
-insert into BorrowingRecords(borrow_date, return_date, book_id, reader) values
+-- Thêm dữ liệu vào bảng BorrowingRecords
+INSERT INTO BorrowingRecords(borrow_date, return_date, book_id, reader_id) VALUES
 ('2024-09-01', '2024-09-10', 1, 1),
 ('2024-09-02', '2024-09-12', 2, 2),
 ('2024-09-03', '2024-09-15', 3, 3);
 
--- TRUY VẤN DỮ LIỆU
 
--- -------------YÊU CẦU 1----------
--- 1.Lấy tất cả các giao dịch mượn sách, bao gồm tên sách, tên độc giả, ngày mượn, và ngày trả
-select 
-    b.book_title as 'Tên sách',
-    r.name as 'Tên độc giả',
-    br.borrow_date as 'Ngày mượn sách',
-    br.return_date as 'Ngày trả sách'
-from
+-- 1. Lấy tất cả các giao dịch mượn sách
+SELECT 
+    b.book_title AS 'Tên sách',
+    r.name AS 'Tên độc giả',
+    br.borrow_date AS 'Ngày mượn sách',
+    br.return_date AS 'Ngày trả sách'
+FROM
     BorrowingRecords br
-join
-    Books b on br.book_id = b.book_id
-join 
-    Readers r on br.reader_id = r.id;
+JOIN
+    Books b ON br.book_id = b.book_id
+JOIN 
+    Readers r ON br.reader_id = r.id;
 
+-- 2. Tìm tất cả các sách mà độc giả 'Nguyen Van A' đã mượn
+SELECT 
+    b.book_title AS 'Tên sách',
+    r.name AS 'Tên độc giả',
+    br.borrow_date AS 'Ngày mượn sách',
+    br.return_date AS 'Ngày trả sách'
+FROM
+    BorrowingRecords br
+JOIN
+    Books b ON br.book_id = b.book_id
+JOIN
+    Readers r ON br.reader_id = r.id
+WHERE r.name = 'Nguyen Van A';
 
--- 2.Tìm tất cả các sách mà độc giả bất kỳ đã mượn(ví dụ : độc giả có tên là Nguyen Van A)
-select 
-    b.book_title as 'Tên sách',
-    r.name as 'Tên độc giả',
-    br.borrow_date as 'Ngày mượn sách',
-    br.return_date as 'Ngày trả sách'
-    from
-        BorrowingRecords br
-    join
-    Books b on br.book_id = b.book_id
-    join
-    Readers r on br.reader_id = r.id
-    where r.name = 'Nguyen Van A';
-
-
--- 3.Đếm số lần một cuốn sách đã được mượn
-select
-    b.book_title as 'Tên sách',
-    count(*) as 'Số lần mượn'
-from 
+-- 3. Đếm số lần một cuốn sách đã được mượn
+SELECT
+    b.book_title AS 'Tên sách',
+    COUNT(*) AS 'Số lần mượn'
+FROM 
     Books b
-join
-    BorrowingRecords br on b.book_id = br.book_id
-group by b.book_title;
+JOIN
+    BorrowingRecords br ON b.book_id = br.book_id
+GROUP BY b.book_title;
 
-
--- 4.Truy vấn tên của độc giả đã mượn nhiều sách nhất
-select
-    r.name as 'Tên độc giả',
-    count(*) as 'Số sách đã mượn'
-from 
+-- 4. Truy vấn tên của độc giả đã mượn nhiều sách nhất
+SELECT
+    r.name AS 'Tên độc giả',
+    COUNT(*) AS 'Số sách đã mượn'
+FROM 
     Readers r
-join
-    BorrowingRecords br on r.id = br.reader_id
-group by r.name
-order by count(*) desc
-limit 1;
-
--- ---------------YÊU CẦU 2---------------
-
--- 1.Tạo view tên là borrowes_books để hiển thị thông tin sách đã mượn
--- bao gồm tên sách, tên độc giả, và ngày mượn.Sử dụng bảng Books, Readers và BorrowingRecords
-create view borrowes_books as
-select
-    b.book_title as 'Tên sách',
-    r.name as 'Tên độc giả',
-    br.borrow_date as 'Ngày mượn sách'
-from
-    BorrowingRecords br
-join
-    Books b on br.book_id = b.book_id
-join
-    Readers r on br.reader_id = r.id;
-
-
--- ---------------YÊU CẦU 3---------------
-
--- 1.Viết một thủ tục tên là get_books_borrowed_by_reader nhận tham số là reader_id
--- thủ tục này trả về danh sách mà độc giả đó đã mượn, bao gồm tên sách và ngày mượn
-delimiter //
-create procedure get_books_borrowed_by_reader(reader_id int)
-begin
-    select
-        b.book_title as 'Tên sách',
-        br.borrow_date as 'Ngày mượn sách'
-    from
-        BorrowingRecords br
-    join
-        Books b on br.book_id = b.book_id
-    join
-        Readers r on br.reader_id = r.id
-        where r.id = reader_id;
-
-end //
-delimiter ;
-
--- ---------------YÊU CẦU 4---------------
--- 1.Tạo một trigger để tự động cập. nhật ngày trả sách trong bảng BorrowingRecords khi cuốn sách được trả
---được cập nhật với giá trị return_date,trigger sẽ ghi lại ngày trả sách nếu return_date chưa được điền trước đó
-delimiter //
-create trigger update_return_date
-before update on BorrowingRecords
-for each row
-begin
-	if NEW.return_date is null then
-    set NEW.return_date = CURDATE();
-    end if;
-end //
-delimiter ;
+JOIN
+    BorrowingRecords br ON r.id = br.reader_id
+GROUP BY r.name
+ORDER BY COUNT(*) DESC
+LIMIT 1;
